@@ -111,7 +111,7 @@ async function poblarBaseDatos() {
 
         try {
 
-            await Producto.createMany([{
+            await Producto.insertMany([{
                 codigo: "ERR001",
                 nombre: "Intel Core i7",
                 categoria: "Placas Base", // Categoría no permitida
@@ -137,18 +137,20 @@ async function poblarBaseDatos() {
                 stock: 5.5, // No es un número entero
                 compatibleCon: ["NVMe", "M.2"],
                 destacado: false
-            }])
+            }], { ordered: false, throwOnValidationError: true }) // Valida e intenta insertar todos los objetos aunque alguno tenga errores.
 
-        } catch(errorValidacion) {
-
-            console.log("Mongoose bloqueo el documento invalido con exito")
-
-            //No indica los errores que deberia indicar en los comentarios de arriba
-            Object.values(errorValidacion.errors).forEach((err) => {
-                console.log(`- Campo [${err.path}: ${err.message}]`)
-            })
-
-        }
+        } catch (errorValidacion) { // Recoge los errores que ocurrieron al validar o insertar los objetos.
+            if (errorValidacion.validationErrors) { // Comprueba si Mongoose encontró errores de validación.
+                errorValidacion.validationErrors.forEach((errorProducto) => { // Recorre los objetos que no pasaron la validación.
+                    console.log(`Errores del objeto ${errorProducto.index + 1}:`) // Muestra la posición del objeto con errores.
+                    Object.values(errorProducto.errors).forEach((error) => { // Recorre los errores de los campos de ese objeto.
+                        console.log(`- Campo [${error.path}]: ${error.message}`) // Muestra el campo y el motivo de la validación fallida.
+                    }) // Termina de recorrer los errores de los campos.
+                }) // Termina de recorrer los objetos con errores.
+            } else { // Atiende errores que no son de validación del esquema.
+                throw errorValidacion // Envía el error no esperado al catch general de la función.
+            } // Termina la comprobación de errores de validación.
+        } // Termina el try...catch de inserción y validación.
 
     } catch(error) {
     
