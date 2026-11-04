@@ -28,13 +28,9 @@ export default async function handler(req, res) {
     if (compatibilidad) {
       filtro.compatibleCon = { $in: [compatibilidad] };
     }
-
-
-    const cursos = await Curso.find(filtro)
-      .select(
-        "codigo titulo categoria precio duracionHoras etiquetas instructor",
-      )
-      .sort({ precio: 1 });
+    
+    const productos = await Producto.find(filtro)
+    .sort({ precio: 1 });
 
     const total = await Producto.countDocuments(filtro);
 
