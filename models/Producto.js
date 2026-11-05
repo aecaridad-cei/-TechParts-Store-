@@ -51,5 +51,6 @@ const productoSchema = new mongoose.Schema(
 )
 
 const Producto = mongoose.models.Producto || mongoose.model("Producto", productoSchema)
+//Mongoose usa "Producto" como nombre del modelo y, por defecto, lo convierte en el nombre plural y en minúsculas para la colección: productos.
 
 export default Producto

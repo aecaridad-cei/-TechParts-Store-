@@ -151,7 +151,6 @@ async function poblarBaseDatos() {
                 throw errorValidacion // Envía el error no esperado al catch general de la función.
             } // Termina la comprobación de errores de validación.
         } // Termina el try...catch de inserción y validación.
-
     } catch(error) {
     
         console.error("Error General:", error.message)
