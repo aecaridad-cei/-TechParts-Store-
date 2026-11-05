@@ -1,70 +1,94 @@
+// Importamos el modelo para crear documentos y validarlos.
 import Producto from "../models/Producto.js";
+// Importamos el catálogo real de 50 productos.
 import productos from "../data/productos.js";
 
+// Array de ejemplo con errores intencionados para probar el schema.
 const productosInvalidos = [
   {
-    codigo: "ERR001",
-    nombre: "Intel Core i7",
-    categoria: "Placas Base",
-    precio: 299.99,
-    stock: 10,
-    compatibleCon: ["LGA1700"],
-    destacado: true,
+    codigo: "ERR001", // Código válido y único.
+    nombre: "Intel Core i7", // Nombre válido (más de 4 caracteres).
+    categoria: "Placas Base", // ERROR: no existe dentro del enum.
+    precio: 299.99, // Precio válido.
+    stock: 10, // Stock válido y entero.
+    compatibleCon: ["LGA1700"], // Array de compatibilidad válido.
+    destacado: true, // Booleano válido.
   },
   {
-    codigo: "ERR002",
-    nombre: "Memoria Corsair",
-    categoria: "Memorias RAM",
-    precio: -50,
-    stock: 20,
-    compatibleCon: ["DDR5"],
-    destacado: false,
+    codigo: "ERR002", // Código válido y único.
+    nombre: "Memoria Corsair", // Nombre válido.
+    categoria: "Memorias RAM", // Categoría válida.
+    precio: -50, // ERROR: el precio no puede ser negativo.
+    stock: 20, // Stock válido y entero.
+    compatibleCon: ["DDR5"], // Array de compatibilidad válido.
+    destacado: false, // Booleano válido.
   },
   {
-    codigo: "ERR003",
-    nombre: "SSD Kingston",
-    categoria: "Almacenamiento",
-    precio: 89.99,
-    stock: 5.5,
-    compatibleCon: ["NVMe", "M.2"],
-    destacado: false,
+    codigo: "ERR003", // Código válido y único.
+    nombre: "SSD Kingston", // Nombre válido.
+    categoria: "Almacenamiento", // Categoría válida.
+    precio: 89.99, // Precio válido.
+    stock: 5.5, // ERROR: el stock debe ser un número entero.
+    compatibleCon: ["NVMe", "M.2"], // Array de compatibilidad válido.
+    destacado: false, // Booleano válido.
   },
 ];
 
+// Valida una lista de productos y devuelve true si todos son válidos.
 async function validarProductos(lista, etiqueta) {
+  // Aquí guardaremos los productos que no pasen la validación.
   const errores = [];
 
+  // Recorremos la lista obteniendo el índice y los datos de cada producto.
   for (const [indice, datos] of lista.entries()) {
+    // try intenta validar un producto.
     try {
-      await new Producto(datos).validate();
+      // new Producto(datos) crea un documento en memoria, sin guardarlo.
+      const producto = new Producto(datos);
+      // validate() ejecuta todas las validaciones del schema.
+      await producto.validate();
     } catch (error) {
+      // Si falla, guardamos el índice y el error de validación.
       errores.push({ indice, error });
     }
   }
 
+  // Si no hubo errores, mostramos un mensaje indicando que todo está bien.
   if (errores.length === 0) {
     console.log(`OK ${etiqueta}: ${lista.length} productos válidos`);
+    // Devolvemos true para indicar que la lista es válida.
     return true;
   }
 
+  // Si hubo errores, mostramos cuántos productos fallaron.
   console.log(`ERROR ${etiqueta}: ${errores.length} productos con errores`);
 
+  // Recorremos cada producto que falló.
   errores.forEach(({ indice, error }) => {
+    // Mostramos el número de producto empezando en 1.
     console.log(`  Producto ${indice + 1}:`);
+    // error.errors contiene un error por cada campo inválido.
     Object.values(error.errors).forEach(({ path, message }) => {
+      // Mostramos el nombre del campo y el mensaje del schema.
       console.log(`  - Campo [${path}]: ${message}`);
     });
   });
 
+  // Devolvemos false porque la lista tenía errores.
   return false;
 }
 
+// Cabecera de la validación del catálogo real.
 console.log("=== Validación del catálogo ===");
+// Validamos los 50 productos y guardamos si todos son válidos.
 const catalogoValido = await validarProductos(productos, "Catálogo base");
 
+// Cabecera de la demostración con errores esperados.
 console.log("\n=== Errores esperados del esquema ===");
+// Validamos los ejemplos inválidos; aquí esperamos que fallen.
 await validarProductos(productosInvalidos, "Productos de ejemplo");
 
+// Si el catálogo real tiene errores, marcamos el proceso como fallido.
 if (!catalogoValido) {
   process.exitCode = 1;
 }
