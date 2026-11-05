@@ -13,8 +13,9 @@
 // - destacado: true si el producto debe resaltarse en la tienda.
 //
 // Los productos están agrupados por categoría para facilitar su lectura.
+// Usamos const y export default, la sintaxis de módulos ES6.
 
-export default [
+const productos = [
   // ============================================================
   // PROCESADORES
   // ============================================================
@@ -531,3 +532,6 @@ export default [
     destacado: true,
   },
 ];
+
+// Exportación por defecto (ES6) para importar el catálogo desde otros archivos.
+export default productos;

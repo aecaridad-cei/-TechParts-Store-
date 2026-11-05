@@ -1,34 +1,38 @@
-// Carga las variables del archivo .env dentro de process.env.
+// Carga las variables del archivo .env en process.env.
 import "dotenv/config";
-// Importamos el modelo para poder insertar productos en MongoDB.
+// Importamos el modelo para insertar productos en MongoDB.
 import Producto from "./models/Producto.js";
-// Importamos el catálogo de 50 productos desde data/productos.js.
+// Importamos el catálogo de 50 productos.
 import productosIniciales from "./data/productos.js";
-// Importamos las funciones compartidas para conectar y desconectar.
+// Importamos las funciones ES6 de conexión y desconexión.
 import { connectDB, disconnectDB } from "./config/database.js";
 
-// Función principal que puebla la base de datos.
-async function poblarBaseDatos() {
-  // try contiene la lógica principal y catch captura cualquier error.
+// Arrow function asíncrona que contiene la lógica principal del seed.
+const poblarBaseDatos = async () => {
+  // try contiene la lógica y catch captura cualquier error.
   try {
-    // Abrimos la conexión con MongoDB usando la URI del .env.
+    // Abrimos la conexión con MongoDB.
     await connectDB();
-    // Mostramos un mensaje para confirmar que la conexión fue correcta.
+    // Confirmamos que la conexión fue correcta.
     console.log("Conectado a MongoDB");
 
-    // Borramos todos los productos anteriores para empezar de cero.
+    // Borramos los productos anteriores para empezar de cero.
     await Producto.deleteMany({});
-    // Confirmamos que la colección anterior quedó vacía.
+    // Confirmamos que la colección quedó vacía.
     console.log("Colección anterior limpiada");
 
-    // insertMany inserta todos los productos en una sola operación.
+    // insertMany inserta todo el array en una sola operación.
     const insertados = await Producto.insertMany(productosIniciales);
-    // Mostramos cuántos documentos se insertaron realmente.
-    console.log(`Se insertaron ${insertados.length} productos correctamente`);
+    // Destructuring (ES6): extraemos length del array de insertados.
+    const { length } = insertados;
+    // Mostramos cuántos documentos se insertaron.
+    console.log(`Se insertaron ${length} productos correctamente`);
   } catch (error) {
-    // Si algo falla, mostramos el mensaje del error.
-    console.error("Error al poblar la base de datos:", error.message);
-    // Marcamos el proceso como fallido para que la terminal lo detecte.
+    // Destructuring (ES6): extraemos el mensaje del error.
+    const { message } = error;
+    // Mostramos el mensaje del error.
+    console.error("Error al poblar la base de datos:", message);
+    // Marcamos el proceso como fallido.
     process.exitCode = 1;
   } finally {
     // finally se ejecuta siempre, haya error o no.
@@ -36,7 +40,7 @@ async function poblarBaseDatos() {
     // Avisamos de que la conexión se cerró.
     console.log("Desconectado de MongoDB");
   }
-}
+};
 
-// Ejecutamos la función principal al arrancar el archivo.
+// Ejecutamos la arrow function principal.
 poblarBaseDatos();

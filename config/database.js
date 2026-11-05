@@ -1,40 +1,47 @@
-// Importamos mongoose para poder gestionar la conexión con MongoDB.
+// Importamos mongoose usando la sintaxis de módulos ES6.
 import mongoose from "mongoose";
 
-// Función reutilizable que abre la conexión con MongoDB.
-// Se usa desde el seed, las consultas y la API.
-export async function connectDB() {
-  // Comprobamos que la variable MONGODB_URI exista en el archivo .env.
-  if (!process.env.MONGODB_URI) {
-    // Si no existe, lanzamos un error claro para saber qué falta.
+// Constantes que hacen más legibles los estados internos de Mongoose.
+const ESTADO_DESCONECTADO = 0;
+const ESTADO_CONECTADO = 1;
+const ESTADO_CONECTANDO = 2;
+
+// Arrow function asíncrona reutilizable para abrir la conexión.
+export const connectDB = async () => {
+  // Destructuring (ES6): extraemos MONGODB_URI de process.env.
+  const { MONGODB_URI } = process.env;
+
+  // Si falta la URI, lanzamos un error claro.
+  if (!MONGODB_URI) {
     throw new Error("La variable de entorno MONGODB_URI no está definida");
   }
 
-  // readyState 1 significa que ya hay una conexión activa.
-  if (mongoose.connection.readyState === 1) {
-    // Devolvemos la conexión existente para no abrir otra innecesariamente.
-    return mongoose.connection;
+  // Destructuring: obtenemos la conexión actual de mongoose.
+  const { connection } = mongoose;
+
+  // Si ya está conectada, reutilizamos la conexión existente.
+  if (connection.readyState === ESTADO_CONECTADO) {
+    return connection;
   }
 
-  // readyState 2 significa que Mongoose se está conectando en este momento.
-  if (mongoose.connection.readyState === 2) {
-    // Esperamos a que termine la conexión que ya está en curso.
-    await mongoose.connection.asPromise();
-    // Devolvemos la conexión ya establecida.
-    return mongoose.connection;
+  // Si se está conectando, esperamos a que termine la operación en curso.
+  if (connection.readyState === ESTADO_CONECTANDO) {
+    await connection.asPromise();
+    return connection;
   }
 
-  // Si no hay conexión, creamos una nueva usando la URI del entorno.
-  await mongoose.connect(process.env.MONGODB_URI);
-  // Devolvemos la conexión para que quien llame a la función pueda usarla.
-  return mongoose.connection;
-}
+  // Si está desconectada, abrimos una conexión nueva.
+  await mongoose.connect(MONGODB_URI);
+  return connection;
+};
 
-// Función reutilizable para cerrar la conexión con MongoDB.
-export async function disconnectDB() {
-  // readyState 0 significa que no hay ninguna conexión abierta.
-  if (mongoose.connection.readyState !== 0) {
-    // Solo desconectamos si realmente hay una conexión activa.
+// Arrow function asíncrona reutilizable para cerrar la conexión.
+export const disconnectDB = async () => {
+  // Destructuring: obtenemos la conexión actual de mongoose.
+  const { connection } = mongoose;
+
+  // Solo desconectamos si hay una conexión abierta o en proceso.
+  if (connection.readyState !== ESTADO_DESCONECTADO) {
     await mongoose.disconnect();
   }
-}
+};
