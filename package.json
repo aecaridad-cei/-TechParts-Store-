@@ -1,7 +1,15 @@
 {
+  "name": "techparts-store",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed": "node seed-productos.js",
+    "consultas": "node consultas-productos.js",
+    "validar": "node scripts/validar-esquema.js"
+  },
   "dependencies": {
     "dotenv": "^18.0.9",
     "mongoose": "^9.11.4"
-  },
-  "type": "module"
+  }
 }
