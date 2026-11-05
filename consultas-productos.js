@@ -2,7 +2,7 @@
 import "dotenv/config";
 // Importamos el modelo Producto para hacer las consultas.
 import Producto from "./models/Producto.js";
-// Importamos las funciones compartidas para conectar y desconectar.
+// Importamos las funciones ES6 de conexión y desconexión.
 import { connectDB, disconnectDB } from "./config/database.js";
 
 // Precio máximo usado en la segunda consulta.
@@ -12,66 +12,51 @@ const COMPATIBILIDAD_BUSCADA = "PCIe 4.0";
 // Número máximo de productos destacados que mostraremos.
 const LIMITE_DESTACADOS = 3;
 
+// Arrow function (ES6) con retorno implícito.
 // Consulta 1: tarjetas gráficas con stock disponible.
-function obtenerTarjetasDisponibles() {
-  return Producto.find({
-    // Filtramos por la categoría exacta.
-    categoria: "Tarjetas Gráficas",
-    // $gte: 0 significa stock mayor o igual que cero.
-    stock: { $gte: 0 },
+const obtenerTarjetasDisponibles = () =>
+  Producto.find({
+    categoria: "Tarjetas Gráficas", // Filtramos por categoría exacta.
+    stock: { $gte: 0 }, // $gte: 0 significa stock mayor o igual que cero.
   })
-    // Seleccionamos solo los campos que nos interesan.
-    .select("nombre precio stock -_id")
-    // lean() devuelve objetos planos en vez de documentos de Mongoose.
-    .lean();
-}
+    .select("nombre precio stock -_id") // Seleccionamos los campos necesarios.
+    .lean(); // lean() devuelve objetos planos en vez de documentos Mongoose.
 
+// Arrow function con retorno implícito.
 // Consulta 2: productos cuyo precio no supera el máximo.
-function obtenerProductosEconomicos() {
-  // $lte significa menor o igual que PRECIO_MAXIMO.
-  return Producto.find({ precio: { $lte: PRECIO_MAXIMO } })
-    // Mostramos nombre, precio y categoría, ocultando _id.
-    .select("nombre precio categoria -_id")
-    // Obtenemos objetos simples para imprimirlos con console.table.
-    .lean();
-}
+const obtenerProductosEconomicos = () =>
+  Producto.find({ precio: { $lte: PRECIO_MAXIMO } }) // $lte: menor o igual.
+    .select("nombre precio categoria -_id") // Mostramos nombre, precio y categoría.
+    .lean(); // Obtenemos objetos simples para console.table.
 
+// Arrow function con retorno implícito.
 // Consulta 3: productos que incluyen una etiqueta de compatibilidad.
-function obtenerProductosCompatibles() {
-  return Producto.find({
-    // $in comprueba si el array compatibleCon contiene el valor buscado.
-    compatibleCon: { $in: [COMPATIBILIDAD_BUSCADA] },
+const obtenerProductosCompatibles = () =>
+  Producto.find({
+    compatibleCon: { $in: [COMPATIBILIDAD_BUSCADA] }, // $in busca dentro del array.
   })
-    // Seleccionamos el nombre y las etiquetas de compatibilidad.
-    .select("nombre compatibleCon -_id")
-    // Devolvemos objetos planos.
-    .lean();
-}
+    .select("nombre compatibleCon -_id") // Mostramos nombre y compatibilidad.
+    .lean(); // Devolvemos objetos planos.
 
+// Arrow function con retorno implícito.
 // Consulta 4: los productos destacados más caros.
-function obtenerDestacadosMasCaros() {
-  // Filtramos solo los productos marcados como destacados.
-  return Producto.find({ destacado: true })
-    // Orden descendente por precio: del más caro al más barato.
-    .sort({ precio: -1 })
-    // Limitamos el número de resultados.
-    .limit(LIMITE_DESTACADOS)
-    // Mostramos solo nombre y precio.
-    .select("nombre precio -_id")
-    // Devolvemos objetos planos.
-    .lean();
-}
+const obtenerDestacadosMasCaros = () =>
+  Producto.find({ destacado: true }) // Solo productos destacados.
+    .sort({ precio: -1 }) // Orden descendente: del más caro al más barato.
+    .limit(LIMITE_DESTACADOS) // Limitamos el número de resultados.
+    .select("nombre precio -_id") // Mostramos solo nombre y precio.
+    .lean(); // Devolvemos objetos planos.
 
-// Función auxiliar para no repetir el mismo console.log y console.table.
-function imprimirResultados(titulo, resultados) {
+// Arrow function auxiliar para imprimir resultados.
+const imprimirResultados = (titulo, resultados) => {
   // Imprimimos un salto de línea y el título de la consulta.
   console.log(`\n${titulo}`);
   // console.table muestra los arrays de objetos en formato tabla.
   console.table(resultados);
-}
+};
 
-// Función principal que ejecuta todas las consultas.
-async function ejecutarConsultas() {
+// Arrow function asíncrona que ejecuta todas las consultas.
+const ejecutarConsultas = async () => {
   // try/catch/finally controla errores y cierra la conexión siempre.
   try {
     // Conectamos con MongoDB.
@@ -79,33 +64,42 @@ async function ejecutarConsultas() {
     // Cabecera del laboratorio de consultas.
     console.log("=== Laboratorio de Consultas ===");
 
-    // Ejecutamos la primera consulta y guardamos el resultado.
-    const tarjetas = await obtenerTarjetasDisponibles();
+    // Promise.all (ES6) ejecuta las cuatro consultas en paralelo.
+    // Destructuring (ES6): guardamos cada resultado en su variable.
+    const [tarjetas, economicos, compatibles, destacados] = await Promise.all([
+      obtenerTarjetasDisponibles(),
+      obtenerProductosEconomicos(),
+      obtenerProductosCompatibles(),
+      obtenerDestacadosMasCaros(),
+    ]);
+
     // Mostramos cuántas tarjetas gráficas hay.
     console.log(`1. Tarjetas gráficas disponibles: ${tarjetas.length}`);
     // Mostramos las tarjetas en forma de tabla.
     console.table(tarjetas);
 
-    // Ejecutamos la segunda consulta y la imprimimos con su título.
+    // Imprimimos los productos económicos.
     imprimirResultados(
       `2. Productos por ${PRECIO_MAXIMO} EUR o menos`,
-      await obtenerProductosEconomicos()
+      economicos
     );
 
-    // Ejecutamos la tercera consulta y la imprimimos con su título.
+    // Imprimimos los productos compatibles con PCIe 4.0.
     imprimirResultados(
       `3. Productos compatibles con ${COMPATIBILIDAD_BUSCADA}`,
-      await obtenerProductosCompatibles()
+      compatibles
     );
 
-    // Ejecutamos la cuarta consulta y la imprimimos con su título.
+    // Imprimimos los productos destacados más caros.
     imprimirResultados(
       `4. Top ${LIMITE_DESTACADOS} productos destacados por precio`,
-      await obtenerDestacadosMasCaros()
+      destacados
     );
   } catch (error) {
-    // Si una consulta falla, mostramos el mensaje real del error.
-    console.error("Error en las consultas:", error.message);
+    // Destructuring (ES6): extraemos el mensaje del error.
+    const { message } = error;
+    // Mostramos el mensaje real del error.
+    console.error("Error en las consultas:", message);
     // Marcamos el proceso como fallido.
     process.exitCode = 1;
   } finally {
@@ -114,7 +108,7 @@ async function ejecutarConsultas() {
     // Avisamos de que ya no estamos conectados.
     console.log("\nDesconectado de MongoDB");
   }
-}
+};
 
-// Arrancamos la ejecución del laboratorio de consultas.
+// Arrancamos la ejecución del laboratorio.
 ejecutarConsultas();

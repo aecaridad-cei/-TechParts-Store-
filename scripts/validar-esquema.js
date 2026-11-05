@@ -1,4 +1,4 @@
-// Importamos el modelo para crear documentos y validarlos.
+// Importamos el modelo usando módulos ES6.
 import Producto from "../models/Producto.js";
 // Importamos el catálogo real de 50 productos.
 import productos from "../data/productos.js";
@@ -7,7 +7,7 @@ import productos from "../data/productos.js";
 const productosInvalidos = [
   {
     codigo: "ERR001", // Código válido y único.
-    nombre: "Intel Core i7", // Nombre válido (más de 4 caracteres).
+    nombre: "Intel Core i7", // Nombre válido.
     categoria: "Placas Base", // ERROR: no existe dentro del enum.
     precio: 299.99, // Precio válido.
     stock: 10, // Stock válido y entero.
@@ -34,12 +34,12 @@ const productosInvalidos = [
   },
 ];
 
-// Valida una lista de productos y devuelve true si todos son válidos.
-async function validarProductos(lista, etiqueta) {
+// Arrow function asíncrona que valida una lista de productos.
+const validarProductos = async (lista, etiqueta) => {
   // Aquí guardaremos los productos que no pasen la validación.
   const errores = [];
 
-  // Recorremos la lista obteniendo el índice y los datos de cada producto.
+  // for...of (ES6) recorre la lista con índice y datos.
   for (const [indice, datos] of lista.entries()) {
     // try intenta validar un producto.
     try {
@@ -76,7 +76,7 @@ async function validarProductos(lista, etiqueta) {
 
   // Devolvemos false porque la lista tenía errores.
   return false;
-}
+};
 
 // Cabecera de la validación del catálogo real.
 console.log("=== Validación del catálogo ===");
