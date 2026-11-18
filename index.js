@@ -2,8 +2,6 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import connectDB from "./src/config/database.js";
 import productRoutes from "./src/routes/productRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
@@ -13,6 +11,8 @@ import {
 } from "./src/middleware/errorMiddleware.js";
 
 const app = express();
+
+connectDB();
 
 app.use(cors());
 app.use(express.json());
@@ -35,24 +35,10 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
-const startServer = async () => {
-  try {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`Server listening on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error.message);
-    process.exitCode = 1;
-  }
-};
-
-const isMainModule =
-  process.argv[1] &&
-  fileURLToPath(import.meta.url) === resolve(process.argv[1]);
-
-if (isMainModule) {
-  startServer();
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+  });
 }
 
 export default app;
