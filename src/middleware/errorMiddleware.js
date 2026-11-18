@@ -30,7 +30,7 @@ const errorHandler = (err, req, res, next) => {
   res.status(statusCode).json({
     success: false,
     error: statusCode >= 500 ? "Internal Server Error" : "Bad Request",
-    message,
+    message: message,
   });
 };
 
