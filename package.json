@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "seed": "node seed-productos.js",
-    "consultas": "node consultas-productos.js",
-    "validar": "node scripts/validar-esquema.js"
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   },
   "dependencies": {
     "cors": "^2.8.6",

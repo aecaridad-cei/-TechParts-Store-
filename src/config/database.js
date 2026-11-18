@@ -1,17 +1,18 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 const connectDB = async () => {
-    try {
-        if (mongoose.connection.readyState >= 1) {
-        return
-    }
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error("MONGODB_URI environment variable is required");
+  }
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI)
-    console.log(`MongoDB Atlas conectado en: ${conn.connection.host}`)
-    } catch (error) {
-        console.error(`Error de conexión a MongoDB: ${error.message}`)
-    process.exit(1)
-    }
-}
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  const conn = await mongoose.connect(uri);
+  console.log(`MongoDB connected: ${conn.connection.host}`);
+  return conn.connection;
+};
 
 export default connectDB;
