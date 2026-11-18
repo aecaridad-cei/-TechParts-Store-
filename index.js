@@ -18,8 +18,12 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.status(200).send("Api Restfull Operativa y conectada a MongoDB Atlas");
-});
+    res.status(200).json({
+        success: true,
+        message: "Api Restfull Operativa y conectada a MongoDB Atlas",
+        endpoint: { products: "/api/products" }
+    })
+})
 
 // Rutas de productos
 app.use("/api/products", productRoutes);
