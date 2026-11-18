@@ -1,5 +1,12 @@
 import mongoose from "mongoose";
 
+const CATEGORIES = [
+  "Procesadores",
+  "Tarjetas Gráficas",
+  "Memorias RAM",
+  "Almacenamiento",
+];
+
 const productSchema = new mongoose.Schema(
   {
     code: {
@@ -49,6 +56,6 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Product = models.Product || model("Product", productSchema);
+const Product = mongoose.models.Product || mongoose.model("Product", productSchema);
 
 export default Product;
