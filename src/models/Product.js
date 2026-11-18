@@ -1,5 +1,12 @@
 import mongoose from "mongoose";
 
+const CATEGORIES = [
+  "Procesadores",
+  "Tarjetas Gráficas",
+  "Memorias RAM",
+  "Almacenamiento",
+];
+
 const productSchema = new mongoose.Schema(
   {
     code: {
